@@ -18,31 +18,19 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012 Joyent Inc.
+# Copyright (c) 2012, Joyent Inc.  All rights reserved.
 #
 
-VER=bash-4.1
-BASE=$(PWD)
-DESTDIR=$(BASE)/../proto
-MAKE="gmake $(PARALLEL)"
+VER =	bash-4.1
 
--include ../Makefile.inc
+include ../Makefile.defs
 
-all: $(VER)/config.status
-	( cd $(VER); env - PATH=$(PATH) \
-	    gmake )
+PATCHES =	Patches/*
 
-install: all
-	mkdir -p $(DESTDIR)
-	( cd $(VER); env - PATH=$(PATH) \
-	    gmake DESTDIR=$(DESTDIR) install)
+#
+# As pkgsrc suggests, parallel builds are unsafe.  Boo!
+#
+PARALLEL =
 
-clean:
-	rm -rf $(VER)
-
-$(VER)/config.status: $(VER)/configure
-	    (cd $(VER); ./configure --prefix=/usr)
-
-$(VER)/configure:
-	gtar -zxf $(VER).tar.gz
-
+include ../Makefile.targ
+include ../Makefile.targ.autoconf

@@ -18,19 +18,15 @@
 #
 # CDDL HEADER END
 #
-
-#
 # Copyright (c) 2009, 2010, Oracle and/or its affiliates. All rights reserved.
-#
-# Copyright (c) 2012 Joyent Inc.
+# Copyright (c) 2015, Joyent, Inc.  All rights reserved.
 #
 
-VERSION=0.9.8w
+VERSION=0.9.8zf
 BASE=$(PWD)
 DESTDIR=$(BASE)/../proto
 
 include Makefile.com
--include ../Makefile.inc
 
 MANDIR = $(DESTDIR)/usr/share/man
 
@@ -41,11 +37,13 @@ all: all32 all64
 all32: $(VER)/$(CONFIG_STATUS)
 	cd $(VER); env - PATH=$(PATH) \
 	"CFLAGS=$(CFLAGS)" \
+	"LDFLAGS=$(LDFLAGS)" \
 	gmake 
 
 all64: $(VER64)/$(CONFIG_STATUS)
 	cd $(VER64); env - PATH=$(PATH) \
 	"CFLAGS=$(CFLAGS)" \
+	"LDFLAGS=$(LDFLAGS)" \
 	gmake 
 
 # opensslconf.h is patched to ensure suitability for both 64bit and 32bit
@@ -71,12 +69,13 @@ install64: all64
 	MACH64=amd64 VERDIR=$(VER64) BASE=$(BASE) DESTDIR=$(DESTDIR) \
 	    VERSION=$(VERSION) ksh93 ./install-sfw-64
 
-$(VER)/configure: $(VER)-src
-	cp -r $(VER)-src $(VER) 
+$(VER)/configure: $(BVER)-src
+	cp -r $(BVER)-src $(VER) 
 	( cd $(VER) ; gpatch -p1 < ../configure.patch )
+	( cd $(VER) ; gpatch -p1 < ../limits.patch )
 	cp engine_pkcs11/* $(VER)/crypto/engine/
 	touch $(VER)/configure
 	cp -r  $(VER) $(VER64)
 
 clean:
-	-rm -rf $(VER) $(VER64)
+	-rm -rf $(VER) $(VER64) $(VER)strap $(VER64)strap $(VER)strap-64

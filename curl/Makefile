@@ -18,32 +18,19 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012 Joyent Inc.
+# Copyright 2015, Joyent, Inc.
 #
 
+VER =	curl-7.42.0
 
-VER=curl-7.21.2
-BASE=$(PWD)
-DESTDIR=$(BASE)/../proto
-GCC=$(DESTDIR)/usr/bin/gcc
+include ../Makefile.defs
 
--include ../Makefile.inc
+TARBALL =		$(VER).tar.bz2
+TARBALL_COMPRESS =	-j
 
-all: $(VER)/config.status
-	( cd $(VER); \
-	    gmake $(PARALLEL) CC=$(GCC))
+AUTOCONF_OPTS +=	--with-ssl=$(DESTDIR)/usr
 
-install: all
-	mkdir -p $(DESTDIR)
-	( cd $(VER); \
-	    gmake $(PARALLEL) CC=$(GCC) DESTDIR=$(DESTDIR) install)
+PATCHES =	Patches/*
 
-clean:
-	rm -rf $(VER)
-
-$(VER)/config.status: $(VER)/configure
-	(cd $(VER); ./configure --prefix=/usr)
-
-$(VER)/configure: $(VER).tar.gz
-	gtar -zxf $(VER).tar.gz
-	touch $(VER)/configure
+include ../Makefile.targ
+include ../Makefile.targ.autoconf

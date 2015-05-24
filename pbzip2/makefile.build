@@ -1,0 +1,38 @@
+# Make file for parallel BZIP2
+SHELL = /bin/sh
+
+CFLAGS += -O2
+
+# Comment out CFLAGS line below for compatability mode for 32bit file sizes
+# (less than 2GB) and systems that have compilers that treat int as 64bit
+# natively (ie: modern AIX)
+override CPPFLAGS += -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+
+# Uncomment CFLAGS line below if you want to compile pbzip2 without load
+# average support for systems that do not support it
+#CPPFLAGS += -DPBZIP_NO_LOADAVG
+
+# Uncomment CFLAGS line below to get debug output
+#CPPFLAGS += -DPBZIP_DEBUG
+
+# Comment out CFLAGS line below to disable pthread semantics in code
+override CPPFLAGS += -D_POSIX_PTHREAD_SEMANTICS
+
+# Comment out CFLAGS line below to disable Thread stack size customization
+override CPPFLAGS += -DUSE_STACKSIZE_CUSTOMIZATION
+
+# Comment out CFLAGS line below to explicity set ignore trailing garbage
+# default behavior: 0 - disabled; 1 - enabled (ignore garbage by default)
+# If IGNORE_TRAILING_GARBAGE is not defined: behavior is automatically
+# determined by program name: bzip2, bunzip2, bzcat - ignore garbage;
+# otherwise - not.
+#CPPFLAGS += -DIGNORE_TRAILING_GARBAGE=1
+
+# External libraries
+override LIBS += -lbz2 -lpthread
+
+all: pbzip2
+
+# Standard pbzip2 compile
+pbzip2: pbzip2.cpp BZ2StreamScanner.cpp ErrorContext.cpp
+	$(CXX) $(CPPFLAGS) $(CFLAGS) $^ -o pbzip2 $(LDFLAGS) $(LIBS)

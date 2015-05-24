@@ -18,38 +18,34 @@
 #
 # CDDL HEADER END
 #
-# Copyright (c) 2012 Joyent Inc.
+# Copyright (c) 2012, Joyent, Inc.  All rights reserved.
 #
 
-VER=screen-4.0.3
-BASE=$(PWD)
-DESTDIR=$(BASE)/../proto
-CC=$(DESTDIR)/usr/bin/gcc
-GTAR=/usr/bin/gtar
-SH=ksh93
+VER =	screen-4.0.3
 
-all: $(VER)/config.status
-	(cd $(VER); env - PATH=$(PATH) $(MAKE) $(PARALLEL) all)
+include ../Makefile.defs
+
+PATCHES =	Patches/*
+
+#
+# It is important to make sure that screen has a prefix of /usr. When screen
+# builds and prefix is not set, it runs which screen to determine the prefix. On
+# the first build, this means that you will probably get /usr/bin/screen.
+# However, on subsequent builds, you will get the one from the proto area. Even
+# worse, if PATH were ever pathological, you could potentially get
+# /opt/local/bin which would be terrible.
+#
+AUTOCONF_OPTS = \
+	--prefix=/usr \
+	--enable-colors256 \
+	--with-sys-screenrc=/etc/screenrc
+
+include ../Makefile.targ
+
+all: all_autoconf
 
 install: all
 	mkdir -p $(DESTDIR)/usr/bin
-	ginstall -m 0555 $(BASE)/$(VER)/screen $(DESTDIR)/usr/bin/screen
-	ginstall -m 0444 $(BASE)/$(VER)/doc/screen.1 $(DESTDIR)/usr/share/man/man1/screen.1
-
-$(VER)/config.status: $(VER)/configure
-	(cd $(VER); env \
-	    CC=$(CC) \
-	    "CFLAGS=$(CFLAGS)" \
-	    PATH=$(PATH) \
-	    MAKE=$(MAKE) \
-	./configure --prefix=/usr)
-
-$(VER)/configure: $(VER).tar.gz
-	$(GTAR) zxpf $(VER).tar.gz
-	gpatch -p0 < Patches/misc.c.patch
-	touch $(VER)/configure
-
-clean:
-	-rm -rf $(VER)
-
-FRC:
+	ginstall -m 0555 $(BASE)/$(VER.32)/screen $(DESTDIR)/usr/bin/screen
+	ginstall -m 0444 $(BASE)/$(VER.32)/doc/screen.1 \
+	    $(DESTDIR)/usr/share/man/man1/screen.1
